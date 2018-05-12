@@ -13,14 +13,49 @@
 using namespace std;
 // #include "lib231/lib231"
 using namespace llvm;
+
+string extractNamespace(const string &id, const string &name);
+string extractClsName(const string &name);
+string extractTplate(const string &name);
+
+class ClassInfo {
+public:
+    string name, namesp, id, clsName, tplate;
+    int cnt;
+    const DIType *data;
+    bool isDerived, isComposite;
+    ClassInfo() {cnt = 0;}
+    ClassInfo(string a, string b, string c, const DIType *d, bool e, bool f) {
+        name = a; 
+        namesp = b;
+        id = c;
+        data = d;
+        isDerived = e;
+        isComposite = f;
+        cnt = 0;
+        if (name != "") {
+            clsName = extractClsName(id);
+            tplate = extractTplate(id);
+        }
+    }
+};
+
+class QueryResult {
+public:
+    string info;
+};
+
 class ModuleChecker {
 public:
     DebugInfoFinder dif;
-
+    map<string, vector<ClassInfo> > mapClassInfo;
     void processType(Module &m);
 
     void printType();
 
+    QueryResult query(string &name);
+
+    void insertClassInfo(string a, string b, string c, const DIType *d, bool e, bool f);
     // ModuleChecker(Module &m) {
         
     //     // errs() << dif.compile_unit_count() << ' '

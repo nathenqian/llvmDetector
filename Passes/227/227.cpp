@@ -20,6 +20,27 @@ struct Security : public ModulePass {
         // return false;
          
     }
+
+    void checkType(Type *a) {
+        while (a->isPointerTy()) {
+            a = cast<PointerType>(a)->getElementType();
+        }
+        // errs() << a->getName().str() << "\n";
+        if (isa<StructType>(a)) {
+            StructType *b = cast<StructType>(a);
+            string name = b->getName().str();
+            if (name.size() >= 6 && name.substr(0, 6) == "class.") {
+                string temp = name.substr(6, string::npos);
+                mc.query(temp);
+            } else 
+            if (name.size() >= 7 && name.substr(0, 7) == "struct.") {
+                string temp = name.substr(7, string::npos);
+                mc.query(temp);
+            }    
+            errs() << name << "\n";
+        }
+    }
+
     bool runOnModule(Module &M) override {
         errs() << "Now passing " << M.getSourceFileName() << "\n";
         mc.processType(M);
@@ -30,35 +51,43 @@ struct Security : public ModulePass {
                 CastInst *inst = cast<CastInst>(&raw_inst);
                 Type *srcType = inst->getSrcTy();
                 Type *destType = inst->getDestTy();
-                if (srcType->isPointerTy()) {
-                    errs() << "cast from " << "\n";
+                
+
+                if (srcType->isPointerTy() && destType->isPointerTy()) {
+                    errs() << "-------------------------------cast between-------------------------" << "\n";
                     srcType->print(errs(), true);  errs() << "\n";
                     destType->print(errs(), true);  errs() << "\n";
+                    // continue;
                     // destType->print(errs(), true);  errs() << "\n";
                     Type *a = cast<PointerType>(srcType)->getElementType();
-                    // errs() << a->isStructTy() << "\n";
-                    if (a->isStructTy()) {
-                        errs() << "-------src-------";
-                        StructType *s = cast<StructType>(a);
-                        for (auto x = s->element_begin ();x !=s->element_end() ;x ++) {
-                            (*x)->print(errs()); errs() << " ";
-                        }
-                        errs() << "\n";
-                    }
+                    checkType(a);
                     a = cast<PointerType>(destType)->getElementType();
+                    checkType(a);
                     // errs() << a->isStructTy() << "\n";
-                    if (a->isStructTy()) {
-                        errs() << "-------dest-------";
-                        StructType *s = cast<StructType>(a);
-                        for (auto x = s->element_begin ();x !=s->element_end() ;x ++) {
-                            (*x)->print(errs()); errs() << " ";
-                        }
-                        errs() << "\n";
-                    }
+                    // if (a->isStructTy()) {
+                    //     errs() << "-------src-------";
+                    //     StructType *s = cast<StructType>(a);
+                    //     errs() << s->getName();
+                    //     // for (auto x = s->element_begin ();x !=s->element_end() ;x ++) {
+                    //         // (*x)->print(errs()); errs() << " ";
+                    //     // }
+                    //     errs() << "\n";
+                    // }
+                    // a = cast<PointerType>(destType)->getElementType();
+                    // // errs() << a->isStructTy() << "\n";
+                    // if (a->isStructTy()) {
+                    //     errs() << "-------dest-------";
+                    //     StructType *s = cast<StructType>(a);
+                    //     for (auto x = s->element_begin ();x !=s->element_end() ;x ++) {
+                    //         (*x)->print(errs()); errs() << " ";
+                    //     }
+                    //     errs() << "\n";
+                    // }
                 }
                 
             }
         }
+        return true;
     }
   // bool runOnFunction(Function &F) override {
 
