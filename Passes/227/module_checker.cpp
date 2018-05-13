@@ -1,4 +1,5 @@
 #include "module_checker.h"
+
 void qassert(bool s, string info = "") {
     if (!s) {
         errs() << "qssert error is " << info << "\n";
@@ -69,6 +70,7 @@ void ModuleChecker::insertClassInfo(string a, string b, string c, const DIType *
 
 static string traceFullName(const DIScope *base) {
     string ret = "";
+    bool firstNamespace = true;
     while (1 == 1) {
         // if (isa<DIDerivedType>(base))  {
         //     // errs() << "DITypeSPACE" << "\n";
@@ -99,16 +101,26 @@ static string traceFullName(const DIScope *base) {
             // errs() << "DINameSPACE " << base->getName() << "\n";
             const DINamespace *info = cast<DINamespace>(base);
             DIScopeRef scope = info->getScope();
-            // errs() << (scope.resolve()) << "\n";
+            // errs() << (scopez.resolve()) << "\n";
             // qassert(scope.resolve() == NULL, "namespace scope must be null");
             if (scope.resolve() == NULL) {
-                ret = base->getName().str() + "::" + ret;
+                if (base->getName().str() == "") {
+                    ret = string("(anonymous namespace)") + "::" + ret;
+                } else {
+                    ret = base->getName().str() + "::" + ret;
+                }
                 return ret;
             } else {
                 qassert(ret != "", "namespace must have element name");
-                ret = base->getName().str() + "::" + ret;
+                if (base->getName().str() == "") {
+                    ret = string("(anonymous namespace)") + "::" + ret;
+                } else {
+                    ret = base->getName().str() + "::" + ret;
+                }
+                // ret = base->getName().str() + "::" + ret;
                 base = cast<DIType>(scope.resolve());
             }
+            firstNamespace = false;
         } else {
             // const DICompositeType *info = cast<DICompositeType>(base);
             // errs() << "DINormal " << base->getName() << "\n";
@@ -140,6 +152,12 @@ void ModuleChecker::processType(Module &m) {
     dif.processModule(m);
     auto x = dif.types();
     int maxi = 0;
+    int a = dif.compile_unit_count();
+    int b = dif.global_variable_count ();
+    int c = dif.subprogram_count () ;
+    int d  =dif.type_count ();
+    int e = dif.scope_count () ;
+    errs() << "total "<< d << "\n";
     for (auto i = x.begin(), e = x.end(); i != e; ++i) {
         const DIType *base = *i;
         if (isa<DIBasicType>(base)) {
@@ -171,10 +189,11 @@ void ModuleChecker::processType(Module &m) {
         if (isa<DICompositeType>(base)) {
             const DICompositeType *info = cast<DICompositeType>(base);
             string name = info->getName().str();
-            errs() << "composite type : " << name << "\n";
+            
             
             string id = traceFullName(base);
             string namesp = extractNamespace(name, id);
+            errs() << "composite type : " << id << "\n";
             insertClassInfo(name, namesp, id, base, false, true);
             // if (name != "") {
             //     insertClassInfo(name, namesp, id, base, false, true);
@@ -196,7 +215,7 @@ void ModuleChecker::processType(Module &m) {
     // exit(0);
 }
 
-QueryResult ModuleChecker::query(string &rawName) {
+static string removeTemplateNumber(string &rawName) {
     string name = rawName;
     qassert(name != "", "query error");
     int index = name.size() - 1;
@@ -213,6 +232,11 @@ QueryResult ModuleChecker::query(string &rawName) {
             name = name.substr(0, index);
         }
     }
+    return name;
+}
+
+QueryResult ModuleChecker::query(string &rawName) {
+    string name = removeTemplateNumber(rawName);    
 
     errs() << "\t\ttry query " << name << "\n";
 
@@ -221,6 +245,67 @@ QueryResult ModuleChecker::query(string &rawName) {
     }
     QueryResult q;
     return q;
+}
+
+DependencyResult static searchInheritance(const DIType *base, string &target) {
+    // errs() << (long long) base << endl;
+    errs() << "searchInheritance start\n";
+    DependencyResult ret;
+    if (isa<DIBasicType>(base)) {
+
+    } else 
+    if (isa<DIDerivedType>(base)) {
+
+    } else 
+    if (isa<DICompositeType>(base)) {
+        const DICompositeType* n = cast<DICompositeType>(base);
+        errs() << "now composite type "<< n->getElements().size() <<"\n";
+        
+        for (auto i : n->getElements()) {
+            if (isa<DIDerivedType>(i)) {
+                const DIDerivedType *m = cast<DIDerivedType>(i);
+                if (m->getTag() == DW_TAG_inheritance) {
+                    const DIType *baseType = m->getBaseType().resolve();
+                    if (isa<DICompositeType>(baseType)) {
+                        if (target == traceFullName(baseType)) {
+                            // errs() << "correct check\n";
+                            ret.res = 1;
+                            return ret;
+                        }
+                    } else {
+                        errs() << "error in basetype change";
+                    }
+                    // qassert(baseType)
+                }
+            }
+            // errs() << i << "\n";
+            // if (isa<DIDerivedType>(i))
+        }
+    } else {
+        qassert(false, "searchInheritance not define");
+    }
+    return ret;
+}
+
+DependencyResult ModuleChecker::check(string &source, string &dest) {
+    DependencyResult ret;
+    errs() << "\t\ttry check " << source << " --> " << dest << "\n";
+    if (source == "" || dest == "") {
+        return ret;
+    }
+    string s = removeTemplateNumber(source);
+    string t = removeTemplateNumber(dest);
+    
+
+    if (mapClassInfo.find(s) == mapClassInfo.end() || mapClassInfo.find(t) == mapClassInfo.end()) {
+        errs() << "cannot check " << s << " " << t << "\n";
+        return ret;
+    }
+
+    ret = searchInheritance(mapClassInfo[s][0].data, t);
+
+    
+    return ret;
 }
 
 void ModuleChecker::printType() {

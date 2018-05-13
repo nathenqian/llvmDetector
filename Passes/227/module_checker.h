@@ -13,7 +13,7 @@
 using namespace std;
 // #include "lib231/lib231"
 using namespace llvm;
-
+const int DW_TAG_inheritance = 28;
 string extractNamespace(const string &id, const string &name);
 string extractClsName(const string &name);
 string extractTplate(const string &name);
@@ -45,6 +45,11 @@ public:
     string info;
 };
 
+class DependencyResult {
+public:
+    int res;
+};
+
 class ModuleChecker {
 public:
     DebugInfoFinder dif;
@@ -54,6 +59,7 @@ public:
     void printType();
 
     QueryResult query(string &name);
+    DependencyResult check(string &source, string &dest);
 
     void insertClassInfo(string a, string b, string c, const DIType *d, bool e, bool f);
     // ModuleChecker(Module &m) {

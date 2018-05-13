@@ -41,6 +41,38 @@ struct Security : public ModulePass {
         }
     }
 
+
+    void checkDepend(Type *a, Type *b) {
+        // errs() << "check depend\n";
+        if (a->isPointerTy() || b->isPointerTy()) {
+            return;
+        }
+        // errs() << "check depend run2\n";
+        // errs() << a->getName().str() << "\n";
+        if (isa<StructType>(a) && isa<StructType>(b)) {
+            StructType *_a = cast<StructType>(a);
+            string namea = _a->getName().str();
+            StructType *_b = cast<StructType>(b);
+            string nameb = _b->getName().str();
+
+            if (namea.size() >= 6 && namea.substr(0, 6) == "class.") {
+                namea = namea.substr(6, string::npos);
+            } else 
+            if (namea.size() >= 7 && namea.substr(0, 7) == "struct.") {
+                namea = namea.substr(7, string::npos);
+            }    
+
+            if (nameb.size() >= 6 && nameb.substr(0, 6) == "class.") {
+                nameb = nameb.substr(6, string::npos);
+            } else 
+            if (nameb.size() >= 7 && nameb.substr(0, 7) == "struct.") {
+                nameb = nameb.substr(7, string::npos);
+            }
+            mc.check(namea, nameb); 
+            // errs() << name << "\n";
+        }
+    }
+
     bool runOnModule(Module &M) override {
         errs() << "Now passing " << M.getSourceFileName() << "\n";
         mc.processType(M);
@@ -61,8 +93,9 @@ struct Security : public ModulePass {
                     // destType->print(errs(), true);  errs() << "\n";
                     Type *a = cast<PointerType>(srcType)->getElementType();
                     checkType(a);
-                    a = cast<PointerType>(destType)->getElementType();
-                    checkType(a);
+                    Type *b = cast<PointerType>(destType)->getElementType();
+                    checkType(b);
+                    checkDepend(a, b);
                     // errs() << a->isStructTy() << "\n";
                     // if (a->isStructTy()) {
                     //     errs() << "-------src-------";
