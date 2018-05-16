@@ -158,8 +158,9 @@ void ModuleChecker::processType(Module &m) {
     int d  =dif.type_count ();
     int e = dif.scope_count () ;
     errs() << "total "<< d << "\n";
-    for (auto i = x.begin(), e = x.end(); i != e; ++i) {
+    for (auto i = dif.types().begin(), e = dif.types().end(); i != e; ++i) {
         const DIType *base = *i;
+        errs() << "parsing " << base->getName().str()<< " " << base->getFlags() << " " << base->getLine() << "\n";
         if (isa<DIBasicType>(base)) {
             string name = base->getName();
             // ClassInfo ci(name, "", name, base, false, true);
@@ -167,9 +168,9 @@ void ModuleChecker::processType(Module &m) {
         } else
         if (isa<DIDerivedType>(base))  {
             // errs() << base << "\n";
-            // const DIDerivedType *info = cast<DIDerivedType>(base);
-            // string name = info->getName().str();
-            // errs() << "derivedtype type : " << name << "\n";
+            const DIDerivedType *info = cast<DIDerivedType>(base);
+            string name = info->getName().str();
+            errs() << "derivedtype type : " << name << "\n";
             // string namesp = traceNameSpace(base);
             // string id = combineNameSpaceId(namesp, name);
             // errs() << id << "\n";
@@ -193,7 +194,7 @@ void ModuleChecker::processType(Module &m) {
             
             string id = traceFullName(base);
             string namesp = extractNamespace(name, id);
-            errs() << "composite type : " << id << "\n";
+            errs() << "composite type : " << id << " " << info->getIdentifier().str()<< "\n";
             insertClassInfo(name, namesp, id, base, false, true);
             // if (name != "") {
             //     insertClassInfo(name, namesp, id, base, false, true);

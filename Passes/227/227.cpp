@@ -2,6 +2,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Function.h"
+#include "debug_parser.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/DebugInfo.h"
@@ -14,6 +15,7 @@ namespace {
 struct Security : public ModulePass {
     static char ID;
     ModuleChecker mc;
+    DebugParser dp;
     Security() : ModulePass(ID) {}
 
     bool doInitialization(Module &mod) override {
@@ -75,6 +77,7 @@ struct Security : public ModulePass {
 
     bool runOnModule(Module &M) override {
         errs() << "Now passing " << M.getSourceFileName() << "\n";
+        dp.process(M.getSourceFileName());
         mc.processType(M);
         for (auto &func : M)
         for (auto &bb : func)
