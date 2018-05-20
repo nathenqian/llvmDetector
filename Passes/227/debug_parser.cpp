@@ -43,6 +43,7 @@ string shrinkPath(string &path) {
 }
 string appendLL(string &p) {
     int i = p.size() - 1;
+    // return p + ".ll";
     for (; i >= 0; i --) {
         if (p[i] == '.') {
             return p.substr(0,i) + ".ll";
@@ -89,7 +90,10 @@ vector<string> parseParameter(int &index, string &line) {
     for (; ;) {
         string temp = "";
         #define isEnd(x) ((x == ')') || (x == '}') || (x == ','))
-        while (index < line.size() && !isEnd(line[index])) {
+        bool inQuota = false;
+        while (index < line.size() && (!isEnd(line[index]) || inQuota)) {
+            if (line[index] == '\"')
+                inQuota ^= 1;
             temp += line[index];
             index += 1;
         }
@@ -120,7 +124,7 @@ DInfo* processLine(string line) {
         return NULL;
     if (line[0] != '!' || !isDigit(line[1]))
         return NULL;
-    errs() << line << "\n";
+    // errs() << line << "\n";
     int index = 1, nex;
     int id = getNumber(index, line);
 
@@ -156,7 +160,7 @@ DInfo* processLine(string line) {
     if (ret->parse(para)) {
         return new DInfoEmpty(id);
     }
-    errs() << ret->toString() << "\n\n";
+    // errs() << ret->toString() << "\n\n";
     return ret;
 }
 
@@ -179,6 +183,7 @@ void DebugParser::process(string path) {
     for (auto i : infos) {
         i.second->genPtr(&infos);
     }
+
 
 
 }   

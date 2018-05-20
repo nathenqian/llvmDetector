@@ -1,6 +1,6 @@
 #ifndef MODULE_CHECKER_H
 #define MODULE_CHECKER_H
-
+#include "debug_parser.h"
 #include "llvm/Pass.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
@@ -22,10 +22,10 @@ class ClassInfo {
 public:
     string name, namesp, id, clsName, tplate;
     int cnt;
-    const DIType *data;
+     DInfo *data;
     bool isDerived, isComposite;
     ClassInfo() {cnt = 0;}
-    ClassInfo(string a, string b, string c, const DIType *d, bool e, bool f) {
+    ClassInfo(string a, string b, string c,  DInfo *d, bool e, bool f) {
         name = a; 
         namesp = b;
         id = c;
@@ -47,21 +47,26 @@ public:
 
 class DependencyResult {
 public:
-    int res;
+    enum Type {
+        unknown, correct, up2down, unrelated
+    };
+    Type res;
+    DependencyResult() {res = unknown;}
 };
 
 class ModuleChecker {
 public:
-    DebugInfoFinder dif;
+    DebugParser dp;
     map<string, vector<ClassInfo> > mapClassInfo;
+
     void processType(Module &m);
 
     void printType();
 
     QueryResult query(string &name);
-    DependencyResult check(string &source, string &dest);
-
-    void insertClassInfo(string a, string b, string c, const DIType *d, bool e, bool f);
+    DependencyResult check(string source, string dest);
+    void process(string filename);
+    void insertClassInfo(string a, string b, string c, DInfo *d, bool e, bool f);
     // ModuleChecker(Module &m) {
         
     //     // errs() << dif.compile_unit_count() << ' '

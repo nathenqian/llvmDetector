@@ -15,7 +15,7 @@ namespace {
 struct Security : public ModulePass {
     static char ID;
     ModuleChecker mc;
-    DebugParser dp;
+    
     Security() : ModulePass(ID) {}
 
     bool doInitialization(Module &mod) override {
@@ -57,19 +57,19 @@ struct Security : public ModulePass {
             StructType *_b = cast<StructType>(b);
             string nameb = _b->getName().str();
 
-            if (namea.size() >= 6 && namea.substr(0, 6) == "class.") {
-                namea = namea.substr(6, string::npos);
-            } else 
-            if (namea.size() >= 7 && namea.substr(0, 7) == "struct.") {
-                namea = namea.substr(7, string::npos);
-            }    
+            // if (namea.size() >= 6 && namea.substr(0, 6) == "class.") {
+            //     namea = namea.substr(6, string::npos);
+            // } else 
+            // if (namea.size() >= 7 && namea.substr(0, 7) == "struct.") {
+            //     namea = namea.substr(7, string::npos);
+            // }    
 
-            if (nameb.size() >= 6 && nameb.substr(0, 6) == "class.") {
-                nameb = nameb.substr(6, string::npos);
-            } else 
-            if (nameb.size() >= 7 && nameb.substr(0, 7) == "struct.") {
-                nameb = nameb.substr(7, string::npos);
-            }
+            // if (nameb.size() >= 6 && nameb.substr(0, 6) == "class.") {
+            //     nameb = nameb.substr(6, string::npos);
+            // } else 
+            // if (nameb.size() >= 7 && nameb.substr(0, 7) == "struct.") {
+            //     nameb = nameb.substr(7, string::npos);
+            // }
             mc.check(namea, nameb); 
             // errs() << name << "\n";
         }
@@ -77,8 +77,7 @@ struct Security : public ModulePass {
 
     bool runOnModule(Module &M) override {
         errs() << "Now passing " << M.getSourceFileName() << "\n";
-        dp.process(M.getSourceFileName());
-        mc.processType(M);
+        mc.process(M.getSourceFileName());
         for (auto &func : M)
         for (auto &bb : func)
         for (auto &raw_inst : bb) {

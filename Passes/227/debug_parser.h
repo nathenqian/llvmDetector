@@ -81,7 +81,7 @@ public:
         return 0;
     }
     void genPtr(map<int, DInfo *> *infos) {
-        for (auto n : data) {
+        for (auto &n : data) {
             n.second = (*infos)[n.first];
             // errs() << n.second << "\n";
         }
@@ -93,17 +93,19 @@ public:
     DInfoComposite() {typ = DInfo::composite;}
     DInfoComposite(int _id) {typ = DInfo::composite; id = _id;}
     string tag, name;
-    InfoData file, scope;
+    InfoData file, scope, elements;
     //(tag: DW_TAG_class_type, name: "C", file: !1, elements: !11, identifier: "_ZTS1C")
     void genPtr(map<int, DInfo *> *infos) {
         if (file.first != -1) file.second = (*infos)[file.first];
         if (scope.first != -1) scope.second = (*infos)[scope.first];
+        if (elements.first != -1) elements.second = (*infos)[elements.first];
     }
     string toString() {
         string ret =  " !" + int2str(id) + " = {" ;
         if (tag != "") ret += "tag: " + tag + ", ";
         if (name != "") ret += "name: " + name + ", ";
         if (file.first != -1) ret += "file: !" + int2str(file.first) + ", ";
+        if (elements.first != -1) ret += "elements: !" + int2str(elements.first) + ", ";
         if (scope.first != -1) ret += "scope: !" + int2str(scope.first) + ", ";
         ret += "}";
         return ret;
@@ -119,6 +121,7 @@ public:
             if (key == "name") {name = v.substr(1, v.size() - 2); }
             if (key == "file") {file.first = str2int(v.substr(1, string::npos)); }
             if (key == "scope") {scope.first = str2int(v.substr(1, string::npos)); }
+            if (key == "elements") {elements.first = str2int(v.substr(1, string::npos)); }
         }
         return 0;
     }
