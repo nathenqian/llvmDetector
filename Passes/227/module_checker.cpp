@@ -302,15 +302,29 @@ QueryResult ModuleChecker::query(string &rawName) {
 DependencyResult static searchInheritance(DInfo *base, string &target) {
     // errs() << (long long) base << endl;
     // errs() << "searchInheritance start " << base->id << "\n";
+    // errs() << base->id << "\n";
     DependencyResult ret;
     if (base->typ == DInfo::basic) {
 
     } else 
     if (base->typ == DInfo::derive) {
-
+        DInfoDerive *m = (DInfoDerive *)(base);
+        // if (m->tag == "DW_TAG_inheritance") {
+        DependencyResult r = searchInheritance((DInfo *) m->baseType.second, target);
+        if (r.res == DependencyResult::correct) {
+            ret.res = DependencyResult::correct;
+            return ret;
+        }
+        // }
     } else 
     if (base->typ == DInfo::composite) {
         DInfoComposite* n = (DInfoComposite *)(base);
+        string id = traceFullName(n);
+        string clsName = extractClsName(id);
+        if (clsName == target) {
+            ret.res = DependencyResult::correct;
+            return ret;
+        }
         // errs() << "now composite type " << "\n";
         if (n->elements.first != -1) {
             DInfoVec *m = (DInfoVec *)n->elements.second;
@@ -318,6 +332,7 @@ DependencyResult static searchInheritance(DInfo *base, string &target) {
                 // errs() << i.first << " " << i.second << "\n";
                 if (i.second->typ == DInfo::derive) {
                     DInfoDerive *m = (DInfoDerive *)(i.second);
+                    // errs() << "checking " << 
                     if (m->tag == "DW_TAG_inheritance") {
                         DInfo *baseType = m->baseType.second;
                         if (baseType != NULL && baseType->typ == DInfo::composite) {
@@ -402,13 +417,13 @@ DependencyResult ModuleChecker::check(string source, string dest) {
         }
     }
     if (ret.res == DependencyResult::unrelated) {
-        errs() << "cast error unrelated\n";
+        errs() << "cast error unrelated between " + source + "--->" + dest + "\n";
     } else 
     if (ret.res == DependencyResult::unknown) {
-        errs() << "cast error unknown\n";
+        errs() << "cast error unknown between " + source + "--->" + dest + "\n";
     } else 
     if (ret.res == DependencyResult::up2down) {
-        errs() << "cast error up2down\n";
+        errs() << "cast error up2down between " + source + "--->" + dest + "\n";
     }
     // ret = searchInheritance(mapClassInfo[s][0].data, t);
     // if (ret.res != 1)
