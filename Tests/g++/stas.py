@@ -32,7 +32,8 @@ raw = {"getValueCast" : 0,
 "toFunctionPtrCast" : 0,
 "unrelated" : 0,
 "correct" : 0,
-"up2down" : 0}
+"up2down" : 0,
+"sameClassTemplateCast" : 0}
 from copy import deepcopy
 types = {
     "local" : {"neq" : 0, "bitcastNumber" : 0, "data" : deepcopy(raw)},
