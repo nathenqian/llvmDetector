@@ -61,7 +61,7 @@ def check_dep(s, t):
     star_ret = ""
     s, stars = analyze_name(s)
     t, start = analyze_name(t)
-    
+
     if "std::" in s or "std::" in t:
         star_ret += "std|||"
     if "boost::" in s or "boost::" in t:
@@ -121,7 +121,7 @@ def check_dep(s, t):
     
 
     if s == t:
-        return "same"
+        return "sameClassTemplateCast"
 
     res = dfs_check(s, t)
     # exit(0)
