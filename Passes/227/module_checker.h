@@ -10,6 +10,7 @@
 #include "llvm/IR/DebugInfo.h"
 #include "map"
 #include <string>
+#include <set>
 using namespace std;
 // #include "lib231/lib231"
 using namespace llvm;
@@ -54,10 +55,21 @@ public:
     DependencyResult() {res = unknown;}
 };
 
+class Node {
+public:
+    string name;
+    vector<Node *> edges;
+    Node() {name = "";}
+    Node(string s) {name = s; }
+};
+
 class ModuleChecker {
 public:
     DebugParser dp;
     map<string, vector<ClassInfo> > mapClassInfo;
+
+    // map<string, Node *> name2node;
+    set<string> possibleName;
 
     void processType(Module &m);
 

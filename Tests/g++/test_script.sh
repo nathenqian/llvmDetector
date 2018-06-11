@@ -1,4 +1,4 @@
-path=`pwd`/*
+path=`pwd`/*.ll
 ALL='all'
 for file in $path;
 do

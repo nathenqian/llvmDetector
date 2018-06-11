@@ -8,13 +8,15 @@ void qassert(bool s, string info = "") {
 
 }
 string extractNamespace(const string &id, const string &name) {
+    if (id == "") return "";
     if (id == name) 
         return "";
     return id.substr(0, id.size() - name.size() - 2);   
 }
 
 string extractClsName(const string &name) {
-    qassert(name != "", "extractClsName error");
+    if (name == "") return "";
+    // qassert(name != "", "extractClsName error");
     int cnt = 0;
 
     for (int i = name.size() - 1; i >= 0; i --) {
@@ -59,12 +61,14 @@ string extractTplate(const string &name) {
 void ModuleChecker::insertClassInfo(string a, string b, string c, DInfo *d, bool e, bool f) {
     ClassInfo ci(a, b, c, d, e, f);
     if (ci.name != "") {
-        errs() << ci.clsName << " //// " << ci.tplate << "\n";
+        // errs() << ci.clsName << " //// " << ci.tplate << "\n";
         for (auto &i : mapClassInfo[ci.clsName]) {
             qassert(i.tplate != ci.tplate, "dup template and class: " + ci.id + " " + ci.clsName + " " + ci.tplate);
         }
         mapClassInfo[ci.clsName].push_back(ci);
+        possibleName.insert(ci.clsName);
     }
+
 }
 
 
@@ -112,6 +116,7 @@ static string traceFullName(DInfo *base) {
                 return ret;
             } else {
                 qassert(ret != "", "namespace must have element name");
+                // if (ret == "") errs() << "---namespace error???" << ""
                 if (info->name == "") {
                     ret = string("(anonymous namespace)") + "::" + ret;
                 } else {
@@ -124,8 +129,11 @@ static string traceFullName(DInfo *base) {
         } else 
         if (base->typ == DInfo::composite) {
             DInfoComposite *info = (DInfoComposite *)(base);
+            // if (info->name == "")
+                // return ""
             // errs() << "DINormal " << base->getName() << "\n";
-
+            // qassert(info->name != "", "composite name is empty");
+            if (info->name == "") return "";
             // DIScopeRef scope = base->getScope();
             // errs() << scope << "\n";
             // errs() << scope.resolve() << "\n";
@@ -187,17 +195,19 @@ void ModuleChecker::process(string filename) {
     // int d  =dif.type_count ();
     // int e = dif.scope_count () ;
     // errs() << "total "<< d << "\n";
-    errs() << "start process mc\n";
+    // errs() << "start process mc\n";
     for (auto i : dp.infos) {
         DInfo *base = i.second;
 
         if (i.first >= 0 && base->typ == DInfo::composite) {
             DInfoComposite *info = (DInfoComposite *)(base);
             string name = info->name;
+            if (name == "") continue;
             // errs() << "name : " << name << " " << info->id << "\n";
             string id = traceFullName(base);
+            if (id == "") continue;
             string namesp = extractNamespace(name, id);
-            errs() << "composite type : " << id << "\n";
+            // errs() << "composite type : " << id << "\n";
 
             insertClassInfo(name, namesp, id, base, false, true);
             // errs() << "end insert\n";
@@ -208,6 +218,7 @@ void ModuleChecker::process(string filename) {
 
         // errs() << "parsing" << "\n";
     }
+
     // errs() << "end process mc\n";
     // for (auto i = dif.types().begin(), e = dif.types().end(); i != e; ++i) {
     //     const DIType *base = *i;
@@ -433,5 +444,64 @@ DependencyResult ModuleChecker::check(string source, string dest) {
 }
 
 void ModuleChecker::printType() {
+    for (auto source : possibleName) {
+        for (auto dest : possibleName) {
+            if (source != dest) {
+                  removeStructPrefix(source);
+                  removeStructPrefix(dest);
+                    DependencyResult ret;
+                    if (source == "" || dest == "") {
+                        // return ret;
+                        qassert(1 == 0, "print type error");
+                        continue;
+                    }
+                    string s = removeTemplateNumber(source);
+                    string t = removeTemplateNumber(dest);
+                    
 
+                    if (mapClassInfo.find(s) == mapClassInfo.end() || mapClassInfo.find(t) == mapClassInfo.end()) {
+                        // errs() << "cannot check " << s << " " << t << "\n";
+                        qassert(1 == 0, "print type error p2");
+                        // ret.res = DependencyResult::unknown;
+                        // return ret;
+                        continue;
+                    }
+
+
+                    for (auto &i : mapClassInfo[s]) {
+                        ret = searchInheritance(i.data, t);
+                        if (ret.res == DependencyResult::correct)
+                            break;
+                    }
+                    if (ret.res != DependencyResult::correct) {
+                        ret.res = DependencyResult::unrelated;
+                        for (auto &i : mapClassInfo[t]) {
+                            auto temp = searchInheritance(i.data, s);
+                            if (temp.res == DependencyResult::correct) {
+                                ret.res = DependencyResult::up2down;
+                                break;
+                            }
+                        }
+                    }
+                    if (ret.res == DependencyResult::correct) {
+                        errs() << source + "--->" + dest + "\n";
+                    } else
+                    if (ret.res == DependencyResult::unrelated) {
+                        // errs() << "unrelated between " + source + "--->" + dest + "\n";
+                    } else 
+                    if (ret.res == DependencyResult::unknown) {
+                        // errs() << "cast error unknown between " + source + "--->" + dest + "\n";
+                    } else 
+                    if (ret.res == DependencyResult::up2down) {
+                        // errs() << "up2down " + source + "--->" + dest + "\n";
+                    }
+                    // ret = searchInheritance(mapClassInfo[s][0].data, t);
+                    // if (ret.res != 1)
+                        // errs() << "cast error found\n";
+                    
+                    // return ret;
+            }
+        }
+    }
 }
+

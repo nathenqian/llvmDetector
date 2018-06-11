@@ -2,103 +2,70 @@
 #include <vector>
 
 using namespace std;
-class STDClass {
-    int x;
+class VVV {
+public:
+    virtual void xx() = 0;
 };
-namespace mspace{
-    class ZX {
-    public:
-        int xfd;
-        void test() {printf("1");}
-    };
-    class A {
-    public:
-        int N;
-        int C;
-        vector<int> s;
-        // virtual void test();
-        void test() {printf("1\n");}
-        virtual void nimas() {printf("caonima");}
-    };
 
-    class C {
-    public:
-        int X;
-    };
-    class B : public A, C {
-    public:
-        void test() {printf("2\n");}
-        void testb() {}
-        void nimas() {printf("caonima666");}
-    };
+class A : VVV {
+    int i;
+public:
+    void xx() {printf("gaisini");}
+};
 
-    class D {
-    public:
-        A a;
-        C c;
-    };
-}
+class B {
+    int j;
+};
 
+class C {
+    int k;
+};
 
-    class ZX {
-    public:
-        int xfd;
-        void test() {printf("1");}
-    };
-    class A {
-    public:
-        int N;
-        int C;
-        vector<int> s;
-        // virtual void test();
-        void test() {printf("1\n");}
-        virtual void nimas() {printf("caonima");}
-    };
+class ChildA : public A {};
+class ChildB : public B {};
+class ChildC : public C {};
+class ChildAB : public A,B {};
+class ChildAC : public A,C {};
+class ChildBC : public B,C {};
+class ChildABC1 : public A,B,C {};
+class ChildABC2 : public ChildAB,ChildAC {};
+class ChildAA : public ChildA {};
+class FakeChildA {public: A a;};
+namespace caonima {
+class A {
+    int i;
+};
 
-    class C {
-    public:
-        int X;
-    };
-    class B : public A, C {
-    public:
-        void test() {printf("2\n");}
-        void testb() {}
-        void nimas() {printf("caonima666");}
-    };
+class B {
+    int j;
+};
 
-    class D {
-    public:
-        A a;
-        C c;
-    };
+class C {
+    int k;
+};
+class ChildA : public A {};
+class ChildB : public B {};
+class ChildC : public C {};
+class ChildAB : public A,B {};
+class ChildAC : public A,C {};
+class ChildBC : public B,C {};
+class ChildABC1 : public A,B,C {};
+class ChildABC2 : public ChildAB,ChildAC {};
+class ChildAA : public ChildA {};
+class FakeChildA {public: A a;};
 
-
-class E {};
-void test(A &x) {
-    x.test();
-}
-void tests() {
-    mspace::A x;
-    mspace::D d;
-    mspace::B _b;
-    mspace::B *b = (mspace::B* )&x;
-    mspace::B *c = (mspace::B* )&d;
-    b->testb();
-    _b.nimas();
-    mspace::A *cao = static_cast<mspace::A *>(b);
 }
 int main() {
-    A x;
-    x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);
-    D d;
-    B _b;
-    ZX v;
-    v.test();
-    B *b = (B* )&x;
-    B *c = (B* )&d;
-    b->testb();
-    _b.nimas();
-    A *cao = static_cast<A *>(b);
-    STDClass xx;
-    tests();
+    ChildAB i0;
+    A *j0 = (A*) &i0;
+
+    ChildAB i1;
+    C *j1 = (C*) &i1;
+
+    ChildABC1 i2;
+    A *j2 = (A*) &i2;
+
+    ChildAA i3;
+    A *j3 = (A*) &i3;
+    FakeChildA xx;
 }
