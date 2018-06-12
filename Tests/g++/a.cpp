@@ -89,16 +89,17 @@ void tests() {
 }
 int main() {
     A x;
-    x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);
-    D d;
-    B _b;
-    ZX v;
-    v.test();
+ //   x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);x.s.push_back(1);
+  //  D d;
+   // B _b;
+    //ZX v;
+    //v.test();
     B *b = (B* )&x;
-    B *c = (B* )&d;
-    b->testb();
-    _b.nimas();
-    A *cao = static_cast<A *>(b);
-    STDClass xx;
-    tests();
+ //   B *c = (B* )&d;
+  //  b->testb();
+b->nimas();
+ //   _b.nimas();
+  //  A *cao = static_cast<A *>(b);
+  //  STDClass xx;
+   // tests();
 }
