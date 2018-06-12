@@ -61,11 +61,12 @@ def check_dep(s, t):
     star_ret = ""
     s, stars = analyze_name(s)
     t, start = analyze_name(t)
-
+    # star_ret += "  " + s + " " + t + ""
     if "std::" in s or "std::" in t:
         star_ret += "std|||"
     if "boost::" in s or "boost::" in t:
         star_ret += "boost|||"
+    # print s, t, star_ret
 
     if s == "{}" or t == "{}":
         return star_ret + "getValueCast"
@@ -74,7 +75,7 @@ def check_dep(s, t):
     if s == "<>" or t == "<>":
         return star_ret + "vectorCast"
     if stars != start:
-        star_ret = "starNEQ|||"
+        star_ret += "starNEQ|||"
     if s in iarrays and \
         t in iarrays:
         return star_ret + "int2intCast"
@@ -116,7 +117,7 @@ def check_dep(s, t):
     t = removeSuffixDigit(t)
     if s not in edges or t not in edges:
         # return s + ' '  +  ' ' + t + " unknown"
-        return "unrelated"
+        return star_ret + "unrelated"
     
     
 
